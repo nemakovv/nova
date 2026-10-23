@@ -20,6 +20,9 @@ jobs:
           echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> $GITHUB_ENV
       - name: Build libbox (sing-box)
         run: |
+          export PATH="$PATH:$(go env GOPATH)/bin"
+          go install -v github.com/sagernet/gomobile/cmd/gomobile@v0.1.4
+          go install -v github.com/sagernet/gomobile/cmd/gobind@v0.1.4
           git clone --depth 1 --branch $SINGBOX_VERSION https://github.com/SagerNet/sing-box.git /tmp/sing-box
           cd /tmp/sing-box
           go run ./cmd/internal/build_libbox -target android
