@@ -17,7 +17,6 @@ jobs:
         run: |
           yes | $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager --licenses > /dev/null || true
           $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;${NDK_VERSION}" "platforms;android-34" "build-tools;34.0.0"
-          echo "ANDROID_NDK_HOME=$ANDROID_HOME/ndk/${NDK_VERSION}" >> $GITHUB_ENV
       - name: Build libbox (sing-box)
         run: |
           export PATH="$PATH:$(go env GOPATH)/bin"
@@ -25,6 +24,12 @@ jobs:
           go install -v github.com/sagernet/gomobile/cmd/gobind@v0.1.4
           git clone --depth 1 --branch $SINGBOX_VERSION https://github.com/SagerNet/sing-box.git /tmp/sing-box
           cd /tmp/sing-box
+          NDK=$(grep -rhoP 'fixedVersion\s*=\s*"\K[^"]+' cmd/internal || true)
+          NDK=${NDK:-26.2.11394342}
+          echo "Using NDK $NDK"
+          $ANDROID_HOME/cmdline-tools/latest/bin/sdkmanager "ndk;$NDK"
+          export ANDROID_NDK_HOME=$ANDROID_HOME/ndk/$NDK
+          ls $ANDROID_HOME/ndk
           go run ./cmd/internal/build_libbox -target android
           mkdir -p $GITHUB_WORKSPACE/app/libs
           cp libbox.aar $GITHUB_WORKSPACE/app/libs/
